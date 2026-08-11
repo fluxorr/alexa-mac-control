@@ -15,8 +15,8 @@ func TestLock(t *testing.T) {
 	if err := Lock(context.Background(), fake); err != nil {
 		t.Fatalf("Lock error = %v", err)
 	}
-	if !fake.ran(cgsessionLock, "-suspend") {
-		t.Errorf("lock helper was not invoked; calls = %v", fake.calls)
+	if !fake.ran("open", screenSaverEngine) {
+		t.Errorf("screen saver was not launched; calls = %v", fake.calls)
 	}
 }
 

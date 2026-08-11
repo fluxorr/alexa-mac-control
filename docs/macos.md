@@ -51,9 +51,10 @@ an optional maintenance step you run by hand — the server never runs it.)
 
 ## 5. Screen lock
 
-`lock` uses the built-in `CGSession -suspend` helper. If the screen requires
-a password after sleep (System Settings → Lock Screen → "Require password"),
-this produces a true lock.
+`lock` launches the system Screen Saver engine
+(`/System/Library/CoreServices/ScreenSaverEngine.app`), which engages the
+lock screen when "Require password after screen saver begins or display is
+turned off" is enabled (System Settings → Lock Screen — the default).
 
 ## 6. Sleep
 

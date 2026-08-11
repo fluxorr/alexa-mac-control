@@ -8,13 +8,14 @@ import (
 	"time"
 )
 
-// cgsessionLock is the fixed-path screen lock helper shipped with macOS. It
-// locks the screen without sudo and takes no user input.
-const cgsessionLock = "/System/Library/CoreServices/Menu Extras/User.menu/Contents/Resources/CGSession"
+// screenSaverEngine is the system screen-saver app; launching it engages the
+// lock screen when "require password after sleep" is enabled (the default).
+// The legacy CGSession helper was removed in recent macOS releases.
+const screenSaverEngine = "/System/Library/CoreServices/ScreenSaverEngine.app"
 
 // Lock locks the screen (PRD §10).
 func Lock(ctx context.Context, r Runner) error {
-	return r.Run(ctx, cgsessionLock, "-suspend")
+	return r.Run(ctx, "open", screenSaverEngine)
 }
 
 // Sleep puts the Mac to sleep (PRD §11). pmset sleepnow needs no privileges.

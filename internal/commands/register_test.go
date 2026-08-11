@@ -190,8 +190,8 @@ func TestLockCommand(t *testing.T) {
 	if res.Message != "Locking your Mac." {
 		t.Errorf("Message = %q, want Locking your Mac.", res.Message)
 	}
-	if !strings.HasSuffix(stub.calls[len(stub.calls)-1], "CGSession -suspend") {
-		t.Errorf("lock helper not invoked; calls = %v", stub.calls)
+	if !strings.HasSuffix(stub.calls[len(stub.calls)-1], "ScreenSaverEngine.app") {
+		t.Errorf("screen saver not launched; calls = %v", stub.calls)
 	}
 }
 
