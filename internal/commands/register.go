@@ -102,6 +102,26 @@ func RegisterDefaults(r *Registry, d Defaults) {
 		},
 	})
 	r.Register(&Command{
+		Name:        "lock",
+		Description: "Lock the screen",
+		Execute: func(ctx context.Context, _ CommandArgs) (Result, error) {
+			if err := mac.Lock(ctx, d.Runner); err != nil {
+				return Result{}, err
+			}
+			return Result{Message: "Locking your Mac."}, nil
+		},
+	})
+	r.Register(&Command{
+		Name:        "sleep",
+		Description: "Put the Mac to sleep",
+		Execute: func(ctx context.Context, _ CommandArgs) (Result, error) {
+			if err := mac.Sleep(ctx, d.Runner); err != nil {
+				return Result{}, err
+			}
+			return Result{Message: "Putting your Mac to sleep."}, nil
+		},
+	})
+	r.Register(&Command{
 		Name:        "system_status",
 		Description: "Report system status",
 		Execute: func(ctx context.Context, _ CommandArgs) (Result, error) {

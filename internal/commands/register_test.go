@@ -53,7 +53,7 @@ func TestRegisterDefaults(t *testing.T) {
 	reg, _ := newTestRegistry(t)
 	want := []string{
 		"open_spotify", "open_vscode", "open_terminal", "open_safari",
-		"search_web", "search_files", "system_status",
+		"search_web", "search_files", "system_status", "lock", "sleep",
 	}
 	for _, name := range want {
 		if _, ok := reg.Lookup(name); !ok {
@@ -177,6 +177,34 @@ func TestSystemStatusMessage(t *testing.T) {
 	want := "Your Mac is online. CPU usage is 18 percent, memory usage is 44 percent, and battery is at 74 percent."
 	if res.Message != want {
 		t.Errorf("Message = %q, want %q", res.Message, want)
+	}
+}
+
+func TestLockCommand(t *testing.T) {
+	reg, stub := newTestRegistry(t)
+	res, err := reg.Execute(context.Background(), "lock", nil)
+	if err != nil {
+		t.Fatalf("lock error = %v", err)
+	}
+	if res.Message != "Locking your Mac." {
+		t.Errorf("Message = %q, want Locking your Mac.", res.Message)
+	}
+	if !strings.HasSuffix(stub.calls[len(stub.calls)-1], "CGSession -suspend") {
+		t.Errorf("lock helper not invoked; calls = %v", stub.calls)
+	}
+}
+
+func TestSleepCommand(t *testing.T) {
+	reg, stub := newTestRegistry(t)
+	res, err := reg.Execute(context.Background(), "sleep", nil)
+	if err != nil {
+		t.Fatalf("sleep error = %v", err)
+	}
+	if res.Message != "Putting your Mac to sleep." {
+		t.Errorf("Message = %q, want Putting your Mac to sleep.", res.Message)
+	}
+	if stub.calls[len(stub.calls)-1] != "pmset sleepnow" {
+		t.Errorf("pmset sleepnow not invoked; calls = %v", stub.calls)
 	}
 }
 
