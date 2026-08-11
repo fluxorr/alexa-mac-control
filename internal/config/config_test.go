@@ -72,3 +72,61 @@ func TestLoadRejectsInvalidLogLevel(t *testing.T) {
 		t.Error("Load() with LOG_LEVEL=verbose: want error, got nil")
 	}
 }
+
+func TestLoadSearchDefaults(t *testing.T) {
+	t.Setenv("SEARCH_ENGINE", "")
+	t.Setenv("SEARCH_ROOTS", "")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if cfg.SearchEngine != "google" {
+		t.Errorf("SearchEngine = %q, want google", cfg.SearchEngine)
+	}
+	if len(cfg.SearchRoots) != 0 {
+		t.Errorf("SearchRoots = %v, want none", cfg.SearchRoots)
+	}
+}
+
+func TestLoadRejectsInvalidSearchEngine(t *testing.T) {
+	t.Setenv("SEARCH_ENGINE", "bing")
+	t.Setenv("SEARCH_ROOTS", "")
+	if _, err := Load(); err == nil {
+		t.Error("Load() with SEARCH_ENGINE=bing: want error, got nil")
+	}
+}
+
+func TestLoadSearchRoots(t *testing.T) {
+	t.Setenv("SEARCH_ENGINE", "duckduckgo")
+	t.Setenv("SEARCH_ROOTS", "~/Developer, ~/Documents ,,")
+	t.Setenv("HOME", "/Users/test")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if cfg.SearchEngine != "duckduckgo" {
+		t.Errorf("SearchEngine = %q, want duckduckgo", cfg.SearchEngine)
+	}
+	want := []string{"/Users/test/Developer", "/Users/test/Documents"}
+	if len(cfg.SearchRoots) != len(want) {
+		t.Fatalf("SearchRoots = %v, want %v", cfg.SearchRoots, want)
+	}
+	for i := range want {
+		if cfg.SearchRoots[i] != want[i] {
+			t.Errorf("SearchRoots[%d] = %q, want %q", i, cfg.SearchRoots[i], want[i])
+		}
+	}
+}
+
+func TestParseSearchRootsTildeOnly(t *testing.T) {
+	t.Setenv("HOME", "/Users/test")
+	roots, err := parseSearchRoots("~")
+	if err != nil {
+		t.Fatalf("parseSearchRoots error = %v", err)
+	}
+	if len(roots) != 1 || roots[0] != "/Users/test" {
+		t.Errorf("parseSearchRoots(~) = %v, want [/Users/test]", roots)
+	}
+}

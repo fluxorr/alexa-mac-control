@@ -10,7 +10,9 @@ import (
 	"log/slog"
 	"net"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -25,6 +27,12 @@ type Config struct {
 	Port int
 	// Level controls the verbosity of structured logging.
 	Level slog.Level
+
+	// SearchEngine selects the web search backend ("google" or "duckduckgo").
+	SearchEngine string
+	// SearchRoots restricts Spotlight file search to these directories. An
+	// empty list disables file search (PRD §9).
+	SearchRoots []string
 }
 
 // Load reads configuration from the environment, applying defaults where a
@@ -57,6 +65,17 @@ func Load() (Config, error) {
 	}
 	cfg.Level = level
 
+	engine := envOr("SEARCH_ENGINE", "google")
+	if engine != "google" && engine != "duckduckgo" {
+		return Config{}, fmt.Errorf("SEARCH_ENGINE must be google or duckduckgo: %q", engine)
+	}
+	cfg.SearchEngine = engine
+
+	cfg.SearchRoots, err = parseSearchRoots(os.Getenv("SEARCH_ROOTS"))
+	if err != nil {
+		return Config{}, err
+	}
+
 	return cfg, nil
 }
 
@@ -84,4 +103,28 @@ func parseLevel(s string) (slog.Level, error) {
 		return slog.LevelError, nil
 	}
 	return slog.LevelInfo, fmt.Errorf("LOG_LEVEL must be one of debug, info, warn, error: %q", s)
+}
+
+// parseSearchRoots splits a comma-separated directory list and expands a
+// leading ~ to the user's home directory.
+func parseSearchRoots(v string) ([]string, error) {
+	if v == "" {
+		return nil, nil
+	}
+	var roots []string
+	for _, part := range strings.Split(v, ",") {
+		root := strings.TrimSpace(part)
+		if root == "" {
+			continue
+		}
+		if root == "~" || strings.HasPrefix(root, "~/") {
+			home, err := os.UserHomeDir()
+			if err != nil {
+				return nil, fmt.Errorf("SEARCH_ROOTS: cannot expand %q: %w", root, err)
+			}
+			root = filepath.Join(home, strings.TrimPrefix(root, "~"))
+		}
+		roots = append(roots, root)
+	}
+	return roots, nil
 }
