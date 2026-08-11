@@ -28,6 +28,9 @@ type Options struct {
 	Date    string
 	// Commands is the allowlist registry used by POST /api/command.
 	Commands *commands.Registry
+	// Alexa, when set, serves POST /alexa — the verified public skill
+	// endpoint. It is nil in local-only deployments.
+	Alexa http.Handler
 }
 
 // New builds the full HTTP handler: routes plus middleware.
@@ -36,6 +39,9 @@ func New(opts Options) http.Handler {
 	mux.HandleFunc("GET /health", handleHealth)
 	mux.HandleFunc("GET /version", handleVersion(opts))
 	mux.HandleFunc("POST /api/command", handleCommand(opts))
+	if opts.Alexa != nil {
+		mux.Handle("POST /alexa", opts.Alexa)
+	}
 
 	return WithMiddleware(opts.Logger, mux)
 }

@@ -39,3 +39,9 @@ func findAppPath(ctx context.Context, r Runner, bundleID string) (string, error)
 	}
 	return "", errors.New("application not installed")
 }
+
+// OpenFolder opens a directory in Finder (PRD §7.5). The path is a fixed
+// configured value, never free text.
+func OpenFolder(ctx context.Context, r Runner, dir string) error {
+	return r.Run(ctx, "open", dir)
+}

@@ -130,3 +130,38 @@ func TestParseSearchRootsTildeOnly(t *testing.T) {
 		t.Errorf("parseSearchRoots(~) = %v, want [/Users/test]", roots)
 	}
 }
+
+func TestLoadOptionalConfig(t *testing.T) {
+	t.Setenv("ALEXA_SKILL_ID", "amzn1.ask.skill.test")
+	t.Setenv("DEVELOPER_ROOT", "~/Projects")
+	t.Setenv("SHORTCUT_CODING_MODE", "Mac - Coding Mode")
+	t.Setenv("HOME", "/Users/test")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if cfg.SkillID != "amzn1.ask.skill.test" {
+		t.Errorf("SkillID = %q", cfg.SkillID)
+	}
+	if cfg.DeveloperRoot != "/Users/test/Projects" {
+		t.Errorf("DeveloperRoot = %q, want /Users/test/Projects", cfg.DeveloperRoot)
+	}
+	if cfg.CodingModeShortcut != "Mac - Coding Mode" {
+		t.Errorf("CodingModeShortcut = %q", cfg.CodingModeShortcut)
+	}
+}
+
+func TestLoadOptionalConfigDefaultsEmpty(t *testing.T) {
+	t.Setenv("ALEXA_SKILL_ID", "")
+	t.Setenv("DEVELOPER_ROOT", "")
+	t.Setenv("SHORTCUT_CODING_MODE", "")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+	if cfg.SkillID != "" || cfg.DeveloperRoot != "" || cfg.CodingModeShortcut != "" {
+		t.Errorf("optional fields should default empty: %+v", cfg)
+	}
+}

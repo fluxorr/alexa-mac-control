@@ -7,16 +7,17 @@ package main
 import (
 	"context"
 	"errors"
+	"github.com/fluxorr/alexa-mac-control/internal/alexa"
+	"github.com/fluxorr/alexa-mac-control/internal/commands"
+	"github.com/fluxorr/alexa-mac-control/internal/config"
+	"github.com/fluxorr/alexa-mac-control/internal/httpapi"
+	"github.com/fluxorr/alexa-mac-control/internal/mac"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-
-	"github.com/fluxorr/alexa-mac-control/internal/commands"
-	"github.com/fluxorr/alexa-mac-control/internal/config"
-	"github.com/fluxorr/alexa-mac-control/internal/httpapi"
 )
 
 var (
@@ -41,12 +42,29 @@ func run() error {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: cfg.Level}))
 	slog.SetDefault(logger)
 
+	registry := commands.NewRegistry()
+	commands.RegisterDefaults(registry, commands.Defaults{
+		Runner:             mac.NewRunner(),
+		SearchEngine:       mac.SearchEngine(cfg.SearchEngine),
+		SearchRoots:        cfg.SearchRoots,
+		DeveloperRoot:      cfg.DeveloperRoot,
+		CodingModeShortcut: cfg.CodingModeShortcut,
+	})
+
+	var alexaHandler http.Handler
+	if cfg.SkillID != "" {
+		alexaHandler = alexa.New(logger, alexa.NewVerifier(cfg.SkillID), registry)
+	} else {
+		logger.Warn("ALEXA_SKILL_ID is not set; the /alexa endpoint is disabled")
+	}
+
 	handler := httpapi.New(httpapi.Options{
 		Logger:   logger,
 		Version:  version,
 		Commit:   commit,
 		Date:     date,
-		Commands: commands.NewRegistry(),
+		Commands: registry,
+		Alexa:    alexaHandler,
 	})
 
 	srv := &http.Server{

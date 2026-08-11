@@ -33,6 +33,15 @@ type Config struct {
 	// SearchRoots restricts Spotlight file search to these directories. An
 	// empty list disables file search (PRD §9).
 	SearchRoots []string
+
+	// SkillID is the Alexa application ID of this skill; requests from any
+	// other skill are rejected. Empty disables the check (dev only).
+	SkillID string
+	// DeveloperRoot is the project folder opened by open_backend. Empty
+	// disables the command (PRD §7.5).
+	DeveloperRoot string
+	// CodingModeShortcut is the Shortcut run by coding_mode (PRD §15).
+	CodingModeShortcut string
 }
 
 // Load reads configuration from the environment, applying defaults where a
@@ -76,6 +85,14 @@ func Load() (Config, error) {
 		return Config{}, err
 	}
 
+	cfg.SkillID = os.Getenv("ALEXA_SKILL_ID")
+
+	cfg.DeveloperRoot, err = expandHome(os.Getenv("DEVELOPER_ROOT"))
+	if err != nil {
+		return Config{}, fmt.Errorf("DEVELOPER_ROOT: %w", err)
+	}
+	cfg.CodingModeShortcut = os.Getenv("SHORTCUT_CODING_MODE")
+
 	return cfg, nil
 }
 
@@ -105,6 +122,21 @@ func parseLevel(s string) (slog.Level, error) {
 	return slog.LevelInfo, fmt.Errorf("LOG_LEVEL must be one of debug, info, warn, error: %q", s)
 }
 
+// expandHome replaces a leading ~ with the user's home directory.
+func expandHome(path string) (string, error) {
+	if path == "" || (!strings.HasPrefix(path, "~")) {
+		return path, nil
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("cannot expand %q: %w", path, err)
+	}
+	if path == "~" {
+		return home, nil
+	}
+	return filepath.Join(home, strings.TrimPrefix(path, "~")), nil
+}
+
 // parseSearchRoots splits a comma-separated directory list and expands a
 // leading ~ to the user's home directory.
 func parseSearchRoots(v string) ([]string, error) {
@@ -117,14 +149,11 @@ func parseSearchRoots(v string) ([]string, error) {
 		if root == "" {
 			continue
 		}
-		if root == "~" || strings.HasPrefix(root, "~/") {
-			home, err := os.UserHomeDir()
-			if err != nil {
-				return nil, fmt.Errorf("SEARCH_ROOTS: cannot expand %q: %w", root, err)
-			}
-			root = filepath.Join(home, strings.TrimPrefix(root, "~"))
+		expanded, err := expandHome(root)
+		if err != nil {
+			return nil, err
 		}
-		roots = append(roots, root)
+		roots = append(roots, expanded)
 	}
 	return roots, nil
 }

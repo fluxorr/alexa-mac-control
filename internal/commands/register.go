@@ -16,6 +16,10 @@ type Defaults struct {
 	Runner       mac.Runner
 	SearchEngine mac.SearchEngine
 	SearchRoots  []string
+	// DeveloperRoot is opened by open_backend; empty disables the command.
+	DeveloperRoot string
+	// CodingModeShortcut is the Shortcut run by coding_mode; empty disables it.
+	CodingModeShortcut string
 }
 
 // maxNamedHits bounds how many file names the Alexa response names out loud
@@ -119,6 +123,32 @@ func RegisterDefaults(r *Registry, d Defaults) {
 				return Result{}, err
 			}
 			return Result{Message: "Putting your Mac to sleep."}, nil
+		},
+	})
+	r.Register(&Command{
+		Name:        "open_backend",
+		Description: "Open the configured project folder",
+		Execute: func(ctx context.Context, _ CommandArgs) (Result, error) {
+			if d.DeveloperRoot == "" {
+				return Result{Message: "Your project folder is not configured on this Mac."}, nil
+			}
+			if err := mac.OpenFolder(ctx, d.Runner, d.DeveloperRoot); err != nil {
+				return Result{}, err
+			}
+			return Result{Message: "Opening your project."}, nil
+		},
+	})
+	r.Register(&Command{
+		Name:        "coding_mode",
+		Description: "Start the coding mode shortcut",
+		Execute: func(ctx context.Context, _ CommandArgs) (Result, error) {
+			if d.CodingModeShortcut == "" {
+				return Result{Message: "Coding mode is not configured on this Mac."}, nil
+			}
+			if err := mac.RunShortcut(ctx, d.Runner, d.CodingModeShortcut); err != nil {
+				return Result{}, err
+			}
+			return Result{Message: "Starting coding mode."}, nil
 		},
 	})
 	r.Register(&Command{

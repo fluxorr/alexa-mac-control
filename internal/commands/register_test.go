@@ -53,6 +53,7 @@ func TestRegisterDefaults(t *testing.T) {
 	reg, _ := newTestRegistry(t)
 	want := []string{
 		"open_spotify", "open_vscode", "open_terminal", "open_safari",
+		"open_backend", "coding_mode",
 		"search_web", "search_files", "system_status", "lock", "sleep",
 	}
 	for _, name := range want {
@@ -205,6 +206,71 @@ func TestSleepCommand(t *testing.T) {
 	}
 	if stub.calls[len(stub.calls)-1] != "pmset sleepnow" {
 		t.Errorf("pmset sleepnow not invoked; calls = %v", stub.calls)
+	}
+}
+
+func TestOpenBackend(t *testing.T) {
+	stub := &stubRunner{out: map[string]string{}}
+	reg := NewRegistry()
+	RegisterDefaults(reg, Defaults{Runner: stub, SearchEngine: mac.EngineGoogle, DeveloperRoot: "/Users/me/projects/backend"})
+
+	res, err := reg.Execute(context.Background(), "open_backend", nil)
+	if err != nil {
+		t.Fatalf("open_backend error = %v", err)
+	}
+	if res.Message != "Opening your project." {
+		t.Errorf("Message = %q", res.Message)
+	}
+	if len(stub.calls) == 0 || stub.calls[len(stub.calls)-1] != "open /Users/me/projects/backend" {
+		t.Errorf("folder not opened; calls = %v", stub.calls)
+	}
+}
+
+func TestOpenBackendNotConfigured(t *testing.T) {
+	stub := &stubRunner{out: map[string]string{}}
+	reg := NewRegistry()
+	RegisterDefaults(reg, Defaults{Runner: stub})
+
+	res, err := reg.Execute(context.Background(), "open_backend", nil)
+	if err != nil {
+		t.Fatalf("open_backend error = %v", err)
+	}
+	if res.Message != "Your project folder is not configured on this Mac." {
+		t.Errorf("Message = %q", res.Message)
+	}
+	if len(stub.calls) != 0 {
+		t.Errorf("no mac call expected; calls = %v", stub.calls)
+	}
+}
+
+func TestCodingMode(t *testing.T) {
+	stub := &stubRunner{out: map[string]string{}}
+	reg := NewRegistry()
+	RegisterDefaults(reg, Defaults{Runner: stub, CodingModeShortcut: "Mac - Coding Mode"})
+
+	res, err := reg.Execute(context.Background(), "coding_mode", nil)
+	if err != nil {
+		t.Fatalf("coding_mode error = %v", err)
+	}
+	if res.Message != "Starting coding mode." {
+		t.Errorf("Message = %q", res.Message)
+	}
+	if len(stub.calls) == 0 || stub.calls[len(stub.calls)-1] != "shortcuts run Mac - Coding Mode" {
+		t.Errorf("shortcut not run; calls = %v", stub.calls)
+	}
+}
+
+func TestCodingModeNotConfigured(t *testing.T) {
+	stub := &stubRunner{out: map[string]string{}}
+	reg := NewRegistry()
+	RegisterDefaults(reg, Defaults{Runner: stub})
+
+	res, err := reg.Execute(context.Background(), "coding_mode", nil)
+	if err != nil {
+		t.Fatalf("coding_mode error = %v", err)
+	}
+	if res.Message != "Coding mode is not configured on this Mac." {
+		t.Errorf("Message = %q", res.Message)
 	}
 }
 
