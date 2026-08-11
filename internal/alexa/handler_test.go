@@ -36,17 +36,17 @@ func (a alexaStub) Output(_ context.Context, name string, args ...string) (strin
 // built-in commands perform.
 func stubSystem() alexaStub {
 	return alexaStub{outputs: map[string]string{
-		"mdfind kMDItemCFBundleIdentifier == 'com.spotify.client'":    "/Applications/Spotify.app\n",
-		"mdfind kMDItemCFBundleIdentifier == 'com.microsoft.VSCode'":  "/Applications/Visual Studio Code.app\n",
-		"mdfind kMDItemCFBundleIdentifier == 'com.apple.Terminal'":    "/System/Applications/Utilities/Terminal.app\n",
-		"mdfind kMDItemCFBundleIdentifier == 'com.apple.Safari'":      "/Applications/Safari.app\n",
-		"sysctl -n kern.boottime": "{ sec = 1752345600 } 123456 0\n",
-		"top -l 1 -n 0":              "CPU usage: 10.0% user, 8.0% sys, 82.0% idle\n",
-		"sysctl -n hw.memsize":       "17179869184\n",
-		"vm_stat":                    "Mach Virtual Memory Statistics: (page size of 4096 bytes)\nPages active: 100.\nPages wired down: 50.\nPages occupied by compressor: 25.\n",
-		"pmset -g batt":              "-InternalBattery-0 (id=1)\t74%; discharging; 4:02 remaining present: true\n",
-		"df -k /":                    "/dev/disk3s1 245110784 135202900 108834076    56% 1 2 3   /\n",
-		"mdfind -onlyin /Users/me/Developer middleware": "",
+		"mdfind kMDItemCFBundleIdentifier == 'com.spotify.client'":   "/Applications/Spotify.app\n",
+		"mdfind kMDItemCFBundleIdentifier == 'com.microsoft.VSCode'": "/Applications/Visual Studio Code.app\n",
+		"mdfind kMDItemCFBundleIdentifier == 'com.apple.Terminal'":   "/System/Applications/Utilities/Terminal.app\n",
+		"mdfind kMDItemCFBundleIdentifier == 'com.apple.Safari'":     "/Applications/Safari.app\n",
+		"sysctl -n kern.boottime":                                    "{ sec = 1752345600 } 123456 0\n",
+		"top -l 1 -n 0":                                              "CPU usage: 10.0% user, 8.0% sys, 82.0% idle\n",
+		"sysctl -n hw.memsize":                                       "17179869184\n",
+		"vm_stat":                                                    "Mach Virtual Memory Statistics: (page size of 4096 bytes)\nPages active: 100.\nPages wired down: 50.\nPages occupied by compressor: 25.\n",
+		"pmset -g batt":                                              "-InternalBattery-0 (id=1)\t74%; discharging; 4:02 remaining present: true\n",
+		"df -k /":                                                    "/dev/disk3s1 245110784 135202900 108834076    56% 1 2 3   /\n",
+		"mdfind -onlyin /Users/me/Developer middleware":              "",
 	}}
 }
 
