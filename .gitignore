@@ -11,6 +11,10 @@
 scratch/
 agent-*.md
 
+# agent working docs (live on disk, not in git)
+AGENTS.md
+TODO.md
+
 # build artifacts
 bin/
 dist/
