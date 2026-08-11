@@ -15,7 +15,8 @@ import (
 
 const (
 	defaultHost = "127.0.0.1"
-	defaultPort = 8787
+	// defaultPort is 2014, the year Amazon Echo devices launched.
+	defaultPort = 2014
 )
 
 // Config holds all runtime configuration for the server.

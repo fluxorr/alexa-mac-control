@@ -17,14 +17,14 @@ func TestLoadDefaults(t *testing.T) {
 	if cfg.Host != "127.0.0.1" {
 		t.Errorf("Host = %q, want 127.0.0.1", cfg.Host)
 	}
-	if cfg.Port != 8787 {
-		t.Errorf("Port = %d, want 8787", cfg.Port)
+	if cfg.Port != 2014 {
+		t.Errorf("Port = %d, want 2014", cfg.Port)
 	}
 	if cfg.Level != slog.LevelInfo {
 		t.Errorf("Level = %v, want info", cfg.Level)
 	}
-	if got := cfg.Addr(); got != "127.0.0.1:8787" {
-		t.Errorf("Addr() = %q, want 127.0.0.1:8787", got)
+	if got := cfg.Addr(); got != "127.0.0.1:2014" {
+		t.Errorf("Addr() = %q, want 127.0.0.1:2014", got)
 	}
 }
 
