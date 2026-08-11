@@ -77,6 +77,19 @@ func TestSearchFilesNoRoots(t *testing.T) {
 	}
 }
 
+func TestSearchFilesFiltersDiagnostics(t *testing.T) {
+	fake := newFakeRunner().withOutput("mdfind -onlyin /Users/me/Developer query",
+		"2026-08-12 00:21:50.785 mdfind[1] [UserQueryParser] Loading keywords\n/Users/me/Developer/real.go\n\n")
+
+	hits, err := SearchFiles(context.Background(), fake, "query", []string{"/Users/me/Developer"})
+	if err != nil {
+		t.Fatalf("SearchFiles error = %v", err)
+	}
+	if len(hits) != 1 || hits[0] != "/Users/me/Developer/real.go" {
+		t.Errorf("hits = %v, want only the absolute path", hits)
+	}
+}
+
 func TestSearchFilesLimited(t *testing.T) {
 	var many string
 	for i := 0; i < maxFileResults+5; i++ {

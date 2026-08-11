@@ -58,7 +58,9 @@ func SearchFiles(ctx context.Context, r Runner, query string, roots []string) ([
 		}
 		for _, line := range strings.Split(out, "\n") {
 			path := strings.TrimSpace(line)
-			if path == "" || seen[path] {
+			// mdfind may interleave stderr diagnostics (e.g. query-parser
+			// notices) into combined output; only absolute paths are hits.
+			if path == "" || !strings.HasPrefix(path, "/") || seen[path] {
 				continue
 			}
 			seen[path] = true
