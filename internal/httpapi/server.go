@@ -9,6 +9,8 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+
+	"github.com/fluxorr/alexa-mac-control/internal/commands"
 )
 
 // VersionInfo is returned by GET /version.
@@ -24,6 +26,8 @@ type Options struct {
 	Version string
 	Commit  string
 	Date    string
+	// Commands is the allowlist registry used by POST /api/command.
+	Commands *commands.Registry
 }
 
 // New builds the full HTTP handler: routes plus middleware.
@@ -31,6 +35,7 @@ func New(opts Options) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", handleHealth)
 	mux.HandleFunc("GET /version", handleVersion(opts))
+	mux.HandleFunc("POST /api/command", handleCommand(opts))
 
 	return WithMiddleware(opts.Logger, mux)
 }

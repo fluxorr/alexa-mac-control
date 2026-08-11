@@ -14,6 +14,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/fluxorr/alexa-mac-control/internal/commands"
 	"github.com/fluxorr/alexa-mac-control/internal/config"
 	"github.com/fluxorr/alexa-mac-control/internal/httpapi"
 )
@@ -41,10 +42,11 @@ func run() error {
 	slog.SetDefault(logger)
 
 	handler := httpapi.New(httpapi.Options{
-		Logger:  logger,
-		Version: version,
-		Commit:  commit,
-		Date:    date,
+		Logger:   logger,
+		Version:  version,
+		Commit:   commit,
+		Date:     date,
+		Commands: commands.NewRegistry(),
 	})
 
 	srv := &http.Server{
