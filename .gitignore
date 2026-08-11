@@ -1,0 +1,17 @@
+# secrets
+.env
+.env.local
+
+# agent-specific files (never track)
+.agents/
+.opencode/
+.opencode.local
+*.session
+.notes/
+scratch/
+agent-*.md
+
+# build artifacts
+bin/
+dist/
+*.test
