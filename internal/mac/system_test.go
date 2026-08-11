@@ -95,12 +95,18 @@ func TestSystemStatusReadFailure(t *testing.T) {
 
 func TestParseUptime(t *testing.T) {
 	start := time.Now()
-	d, err := parseUptime("{ sec = " + strconv.FormatInt(start.Unix(), 10) + " } 123456 0\n")
-	if err != nil {
-		t.Fatalf("parseUptime error = %v", err)
-	}
-	if d < 0 || d > time.Minute {
-		t.Errorf("parseUptime = %v, want a small positive duration", d)
+	sec := strconv.FormatInt(start.Unix(), 10)
+	for _, out := range []string{
+		"{ sec = " + sec + ", usec = 462503 } Wed Jul 15 10:58:54 2026\n",
+		"{ sec = " + sec + " } 123456 0\n",
+	} {
+		d, err := parseUptime(out)
+		if err != nil {
+			t.Fatalf("parseUptime(%q) error = %v", out, err)
+		}
+		if d < 0 || d > time.Minute {
+			t.Errorf("parseUptime(%q) = %v, want a small positive duration", out, d)
+		}
 	}
 
 	if _, err := parseUptime("garbage"); err == nil {

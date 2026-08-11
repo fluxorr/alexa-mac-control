@@ -95,15 +95,16 @@ func SystemStatus(ctx context.Context, r Runner) (Status, error) {
 	return st, nil
 }
 
-// parseUptime reads the boot timestamp from `sysctl -n kern.boottime`:
-// "{ sec = 1752345600 } 123456789 0".
+// parseUptime reads the boot timestamp from `sysctl -n kern.boottime`.
+// Newer macOS emits "{ sec = 1784093334, usec = 462503 }", older releases
+// "{ sec = 1784093334 }"; both end the seconds value at a delimiter.
 func parseUptime(out string) (time.Duration, error) {
 	idx := strings.Index(out, "sec = ")
 	if idx < 0 {
 		return 0, fmt.Errorf("unexpected boottime output %q", out)
 	}
 	rest := out[idx+len("sec = "):]
-	end := strings.IndexAny(rest, " }")
+	end := strings.IndexAny(rest, " ,}")
 	if end < 0 {
 		return 0, fmt.Errorf("unexpected boottime output %q", out)
 	}
